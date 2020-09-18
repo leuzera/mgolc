@@ -1,6 +1,6 @@
 import { Token } from "./token";
 
-export class HashTable {
+export class TokenTable {
   table: Map<string, Array<Token>>;
 
   constructor() {
