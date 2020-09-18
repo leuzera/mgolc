@@ -1,16 +1,16 @@
 export enum TOKEN {
-  NUM = "NUM",
-  LITERAL = "LITERAL",
-  ID = "ID",
-  COMENTARIO = "COMENTARIO",
-  EOF = "EOF",
-  OPR = "OPR",
-  RCB = "RCB",
-  OPM = "OPM",
-  AB_P = "AB_P",
-  FC_P = "FC_P",
-  PT_V = "PT_V",
-  ERRO = "ERRO",
+  NUM = "NUM", // Constante numérica
+  LITERAL = "LITERAL", // Constante literal
+  ID = "ID", // Identificador
+  COMENTARIO = "COMENTARIO", // Ignorar  comentários, ou seja, reconhecer mas não retornar o token.
+  EOF = "EOF", // Final de Arquivo
+  OPR = "OPR", // Operadores relacionais
+  RCB = "RCB", // Atribuição
+  OPM = "OPM", // Operadores aritméticos
+  AB_P = "AB_P", // Abre Parênteses
+  FC_P = "FC_P", // Fecha Parênteses
+  PT_V = "PT_V", // Ponto e vírgula
+  ERRO = "ERRO", // Qualquer coisa diferente de qualquer símbolo token e palavra-chave definida.
 }
 
 export class Token {
