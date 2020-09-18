@@ -18,4 +18,14 @@ export class HashTable {
   get(lexema: string): Token[] | undefined {
     return this.table.get(lexema);
   }
+
+  toString(): string {
+    let strTable = "";
+
+    for (const [key, value] of this.table) {
+      strTable += `${key}: ${value}\n`;
+    }
+
+    return strTable;
+  }
 }
