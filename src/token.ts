@@ -16,11 +16,23 @@ export enum TOKEN {
 export class Token {
   token: TOKEN;
   lexema: string;
+  linha: number;
+  coluna?: number;
   tipo?: string;
 
-  constructor(token: TOKEN, lexema: string, tipo?: string) {
+  /**
+   *
+   * @param token Tipo do token
+   * @param lexema O lexema
+   * @param linha Linha do lexema
+   * @param coluna Coluna do primeiro caractere do lexema
+   * @param tipo Tipo do lexema
+   */
+  constructor(token: TOKEN, lexema: string, linha: number, coluna?: number, tipo?: string) {
     this.token = token;
     this.lexema = lexema;
+    this.linha = linha;
+    this.coluna = coluna;
     this.tipo = tipo;
   }
 

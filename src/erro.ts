@@ -6,15 +6,10 @@ export enum ERRO {
 
 export class Erro extends Token {
   tipoErro: ERRO;
-  linha: number;
-  coluna: number;
 
-  constructor(lexema: string, tipoErro: ERRO, linha: number, coluna: number) {
-    super(TOKEN.ERRO, lexema);
-
+  constructor(lexema: string, tipoErro: ERRO, linha: number, coluna?: number) {
+    super(TOKEN.ERRO, lexema, linha, coluna);
     this.tipoErro = tipoErro;
-    this.linha = linha;
-    this.coluna = coluna;
   }
 
   errorString(): string {
