@@ -1,22 +1,22 @@
 import { Token } from "./token";
 
 export class TokenTable {
-  table: Map<string, Array<Token>>;
+  table: Map<number, Array<Token>>;
 
   constructor() {
     this.table = new Map();
   }
 
   add(token: Token): number | undefined {
-    if (!this.table.get(token.lexema)) {
-      this.table.set(token.lexema, new Array<Token>());
+    if (!this.table.get(token.linha)) {
+      this.table.set(token.linha, new Array<Token>());
     }
 
-    return this.table.get(token.lexema)?.push(token);
+    return this.table.get(token.linha)?.push(token);
   }
 
-  get(lexema: string): Token[] | undefined {
-    return this.table.get(lexema);
+  get(line: number): Token[] | undefined {
+    return this.table.get(line);
   }
 
   toString(): string {
