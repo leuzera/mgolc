@@ -1,6 +1,6 @@
 import { Token } from "./token";
 import { TokenErro } from "./erro";
-import { createMachine } from "@xstate/fsm";
+import { createMachine, interpret } from "xstate";
 
 interface TokenContext {
   token: Token;
@@ -58,7 +58,7 @@ type TokenState =
   | { value: "id"; context: TokenContext & { token: Token; error: undefined } }
   | { value: "erro"; context: TokenContext & { token: undefined; error: TokenErro } };
 
-export const tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>({
+const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>({
   id: "tokenMachine",
   initial: "inicio",
   states: {
@@ -84,19 +84,33 @@ export const tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         FC_CHAVE: "comment",
       },
     },
-    comment: {},
+    comment: {
+      type: "final",
+    },
     s2: {
       on: {
         QUALQUER: "s2",
         ASPAS: "lit",
       },
     },
-    lit: {},
-    pt_v: {},
-    fc_p: {},
-    ab_p: {},
-    eof: {},
-    opm: {},
+    lit: {
+      type: "final",
+    },
+    pt_v: {
+      type: "final",
+    },
+    fc_p: {
+      type: "final",
+    },
+    ab_p: {
+      type: "final",
+    },
+    eof: {
+      type: "final",
+    },
+    opm: {
+      type: "final",
+    },
     s3: {
       on: {
         DIGITO: "real",
@@ -120,42 +134,62 @@ export const tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         EXP: "s4",
         PONTO: "s3",
       },
+      type: "final",
     },
     real: {
       on: {
         DIGITO: "real",
         EXP: "s4",
       },
+      type: "final",
     },
     exp: {
       on: {
         DIGITO: "exp",
       },
+      type: "final",
     },
     maior: {
       on: {
         IGUAL: "maior_igual",
       },
+      type: "final",
     },
-    maior_igual: {},
+    maior_igual: {
+      type: "final",
+    },
     menor: {
       on: {
         IGUAL: "menor_igual",
         MAIOR: "diferente",
         MENOS: "rcb",
       },
+      type: "final",
     },
-    menor_igual: {},
-    diferente: {},
-    igual: {},
-    rcb: {},
+    menor_igual: {
+      type: "final",
+    },
+    diferente: {
+      type: "final",
+    },
+    igual: {
+      type: "final",
+    },
+    rcb: {
+      type: "final",
+    },
     id: {
       on: {
         LETRA: "id",
         DIGITO: "id",
         UNDERLINE: "id",
       },
+      type: "final",
     },
-    erro: { on: {} },
+    erro: {
+      type: "final",
+    },
   },
 });
+
+export const tokenMachine = interpret(_tokenMachine);
