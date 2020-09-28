@@ -4,7 +4,7 @@ export enum ERRO {
   CARACTERE_INVALIDO = "CARACTERE_INVALIDO",
 }
 
-export class Erro extends Token {
+export class TokenErro extends Token {
   tipoErro: ERRO;
 
   constructor(lexema: string, tipoErro: ERRO, linha: number, coluna?: number) {

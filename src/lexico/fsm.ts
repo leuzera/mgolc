@@ -1,10 +1,10 @@
 import { Token } from "./token";
-import { Erro } from "./erro";
+import { TokenErro } from "./erro";
 import { createMachine } from "@xstate/fsm";
 
 interface TokenContext {
   token: Token;
-  erro?: Erro;
+  erro?: TokenErro;
 }
 
 type TokenEvent =
@@ -29,7 +29,7 @@ type TokenEvent =
   | { type: "ESPACO"; id: string }
   | { type: "RETURN"; id: string }
   | { type: "EOF"; id: string }
-  | { type: "ERRO"; erro: Erro };
+  | { type: "ERRO"; erro: TokenErro };
 
 type TokenState =
   | { value: "inicio"; context: TokenContext & { token: undefined; error: undefined } }
@@ -56,7 +56,7 @@ type TokenState =
   | { value: "igual"; context: TokenContext & { token: Token; error: undefined } }
   | { value: "rcb"; context: TokenContext & { token: Token; error: undefined } }
   | { value: "id"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "erro"; context: TokenContext & { token: undefined; error: Erro } };
+  | { value: "erro"; context: TokenContext & { token: undefined; error: TokenErro } };
 
 export const tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>({
   id: "tokenMachine",
