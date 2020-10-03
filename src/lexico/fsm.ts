@@ -1,195 +1,348 @@
-import { Token } from "./token";
+import { TOKEN, Token } from "./token";
 import { TokenErro } from "./erro";
-import { createMachine, interpret } from "xstate";
+import { createMachine, interpret, assign } from "xstate";
 
 interface TokenContext {
-  token: Token;
-  erro?: TokenErro;
+  lexema: string;
+  linha: number;
+  coluna: number;
 }
 
 type TokenEvent =
-  | { type: "DIGITO"; id: string }
-  | { type: "LETRA"; id: string }
-  | { type: "AB_CHAVE"; id: string }
-  | { type: "FC_CHAVE"; id: string }
-  | { type: "ASPAS"; id: string }
-  | { type: "PONTO"; id: string }
-  | { type: "EXP"; id: string }
-  | { type: "MAIS"; id: string }
-  | { type: "MENOS"; id: string }
-  | { type: "QUALQUER"; id: string }
-  | { type: "PONTO_VIRGULA"; id: string }
-  | { type: "AB_P"; id: string }
-  | { type: "FC_P"; id: string }
-  | { type: "MENOR"; id: string }
-  | { type: "MAIOR"; id: string }
-  | { type: "IGUAL"; id: string }
-  | { type: "UNDERLINE"; id: string }
-  | { type: "OPM"; id: string }
-  | { type: "ESPACO"; id: string }
-  | { type: "RETURN"; id: string }
-  | { type: "EOF"; id: string }
-  | { type: "ERRO"; erro: TokenErro };
+  | { type: "DIGITO"; char: string; linha: number; coluna: number }
+  | { type: "LETRA"; char: string; linha: number; coluna: number }
+  | { type: "AB_CHAVE"; char: string; linha: number; coluna: number }
+  | { type: "FC_CHAVE"; char: string; linha: number; coluna: number }
+  | { type: "ASPAS"; char: string; linha: number; coluna: number }
+  | { type: "PONTO"; char: string; linha: number; coluna: number }
+  | { type: "EXP"; char: string; linha: number; coluna: number }
+  | { type: "MAIS"; char: string; linha: number; coluna: number }
+  | { type: "MENOS"; char: string; linha: number; coluna: number }
+  | { type: "QUALQUER"; char: string; linha: number; coluna: number }
+  | { type: "PONTO_VIRGULA"; char: string; linha: number; coluna: number }
+  | { type: "AB_P"; char: string; linha: number; coluna: number }
+  | { type: "FC_P"; char: string; linha: number; coluna: number }
+  | { type: "MENOR"; char: string; linha: number; coluna: number }
+  | { type: "MAIOR"; char: string; linha: number; coluna: number }
+  | { type: "IGUAL"; char: string; linha: number; coluna: number }
+  | { type: "UNDERLINE"; char: string; linha: number; coluna: number }
+  | { type: "OPM"; char: string; linha: number; coluna: number }
+  | { type: "ESPACO"; char: string; linha: number; coluna: number }
+  | { type: "RETURN"; char: string; linha: number; coluna: number }
+  | { type: "EOF"; char: string; linha: number; coluna: number }
+  | { type: "RESET"; char: string; linha: number; coluna: number }
+  | { type: "OUTRO"; char: string; linha: number; coluna: number };
 
 type TokenState =
-  | { value: "inicio"; context: TokenContext & { token: undefined; error: undefined } }
+  | { value: "inicio"; context: TokenContext }
   | { value: "s1"; context: TokenContext }
-  | { value: "comment"; context: TokenContext & { token: undefined; error: undefined } }
+  | { value: "comment"; context: TokenContext }
   | { value: "s2"; context: TokenContext }
-  | { value: "lit"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "pt_v"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "fc_p"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "ab_p"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "eof"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "opm"; context: TokenContext & { token: Token; error: undefined } } // deveria separar os diferentes operadores (+|-|*|/)?
+  | { value: "lit"; context: TokenContext }
+  | { value: "pt_v"; context: TokenContext }
+  | { value: "fc_p"; context: TokenContext }
+  | { value: "ab_p"; context: TokenContext }
+  | { value: "eof"; context: TokenContext }
+  | { value: "opm"; context: TokenContext } // deveria separar os diferentes operadores (+|-|*|/)?
   | { value: "s3"; context: TokenContext }
   | { value: "s4"; context: TokenContext }
   | { value: "s5"; context: TokenContext }
-  | { value: "int"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "real"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "exp"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "maior"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "maior_igual"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "menor"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "menor_igual"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "diferente"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "igual"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "rcb"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "id"; context: TokenContext & { token: Token; error: undefined } }
-  | { value: "erro"; context: TokenContext & { token: undefined; error: TokenErro } };
+  | { value: "int"; context: TokenContext }
+  | { value: "real"; context: TokenContext }
+  | { value: "exp"; context: TokenContext }
+  | { value: "maior"; context: TokenContext }
+  | { value: "maior_igual"; context: TokenContext }
+  | { value: "menor"; context: TokenContext }
+  | { value: "menor_igual"; context: TokenContext }
+  | { value: "diferente"; context: TokenContext }
+  | { value: "igual"; context: TokenContext }
+  | { value: "rcb"; context: TokenContext }
+  | { value: "id"; context: TokenContext }
+  | { value: "erro"; context: TokenContext };
 
-const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>({
-  id: "tokenMachine",
-  initial: "inicio",
-  states: {
-    inicio: {
-      on: {
-        DIGITO: "int",
-        LETRA: "id",
-        ASPAS: "s2",
-        PONTO_VIRGULA: "pt_v",
-        AB_CHAVE: "s1",
-        AB_P: "ab_p",
-        FC_P: "fc_p",
-        EOF: "eof",
-        OPM: "opm",
-        MENOR: "menor",
-        MAIOR: "maior",
-        IGUAL: "igual",
+const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
+  {
+    id: "tokenMachine",
+    initial: "inicio",
+    context: {
+      lexema: "",
+      linha: 0,
+      coluna: 0,
+    },
+    on: {
+      RESET: { target: "inicio", actions: ["reset"] },
+      ESPACO: { target: "inicio", actions: ["reset"] },
+      RETURN: { target: "inicio", actions: ["reset"] },
+    },
+    states: {
+      inicio: {
+        on: {
+          DIGITO: { target: "int", actions: ["addToLexema"] },
+          LETRA: { target: "id", actions: ["addToLexema"] },
+          ASPAS: { target: "s2", actions: ["addToLexema"] },
+          PONTO_VIRGULA: { target: "pt_v", actions: ["addToLexema"] },
+          AB_CHAVE: { target: "s1", actions: ["addToLexema"] },
+          AB_P: { target: "ab_p", actions: ["addToLexema"] },
+          FC_P: { target: "fc_p", actions: ["addToLexema"] },
+          EOF: { target: "eof", actions: ["addToLexema"] },
+          OPM: { target: "opm", actions: ["addToLexema"] },
+          MENOR: { target: "menor", actions: ["addToLexema"] },
+          MAIOR: { target: "maior", actions: ["addToLexema"] },
+          IGUAL: { target: "igual", actions: ["addToLexema"] },
+        },
       },
-    },
-    s1: {
-      on: {
-        QUALQUER: "s1",
-        FC_CHAVE: "comment",
+      s1: {
+        on: {
+          "*": { target: "s1", internal: true, actions: ["addToLexema"] },
+          FC_CHAVE: { target: "comment", actions: ["addToLexema"] },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
       },
-    },
-    comment: {
-      type: "final",
-    },
-    s2: {
-      on: {
-        QUALQUER: "s2",
-        ASPAS: "lit",
+      comment: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.COMENTARIO,
+          final: true,
+        },
       },
-    },
-    lit: {
-      type: "final",
-    },
-    pt_v: {
-      type: "final",
-    },
-    fc_p: {
-      type: "final",
-    },
-    ab_p: {
-      type: "final",
-    },
-    eof: {
-      type: "final",
-    },
-    opm: {
-      type: "final",
-    },
-    s3: {
-      on: {
-        DIGITO: "real",
+      s2: {
+        on: {
+          "*": { target: "s2", internal: true, actions: ["addToLexema"] },
+          RESET: { target: "inicio", actions: ["reset"] },
+          ASPAS: { target: "lit", actions: ["addToLexema"] },
+        },
       },
-    },
-    s4: {
-      on: {
-        MAIS: "s5",
-        MENOS: "s5",
-        DIGITO: "exp",
+      lit: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.LITERAL,
+          final: true,
+        },
       },
-    },
-    s5: {
-      on: {
-        DIGITO: "exp",
+      pt_v: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.PT_V,
+          final: true,
+        },
       },
-    },
-    int: {
-      on: {
-        DIGITO: "int",
-        EXP: "s4",
-        PONTO: "s3",
+      fc_p: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.FC_P,
+          final: true,
+        },
       },
-      type: "final",
-    },
-    real: {
-      on: {
-        DIGITO: "real",
-        EXP: "s4",
+      ab_p: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.AB_P,
+          final: true,
+        },
       },
-      type: "final",
-    },
-    exp: {
-      on: {
-        DIGITO: "exp",
+      eof: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.EOF,
+          final: true,
+        },
       },
-      type: "final",
-    },
-    maior: {
-      on: {
-        IGUAL: "maior_igual",
+      opm: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.OPM,
+          final: true,
+        },
       },
-      type: "final",
-    },
-    maior_igual: {
-      type: "final",
-    },
-    menor: {
-      on: {
-        IGUAL: "menor_igual",
-        MAIOR: "diferente",
-        MENOS: "rcb",
+      s3: {
+        on: {
+          DIGITO: { target: "real", actions: ["addToLexema"] },
+          "*": "erro",
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
       },
-      type: "final",
-    },
-    menor_igual: {
-      type: "final",
-    },
-    diferente: {
-      type: "final",
-    },
-    igual: {
-      type: "final",
-    },
-    rcb: {
-      type: "final",
-    },
-    id: {
-      on: {
-        LETRA: "id",
-        DIGITO: "id",
-        UNDERLINE: "id",
+      s4: {
+        on: {
+          MAIS: { target: "s5", actions: ["addToLexema"] },
+          MENOS: { target: "s5", actions: ["addToLexema"] },
+          DIGITO: { target: "exp", actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
       },
-      type: "final",
-    },
-    erro: {
-      type: "final",
+      s5: {
+        on: {
+          DIGITO: { target: "exp", actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+      },
+      int: {
+        on: {
+          DIGITO: { target: "int", internal: true, actions: ["addToLexema"] },
+          EXP: { target: "s4", actions: ["addToLexema"] },
+          PONTO: { target: "s3", actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.NUM,
+          final: true,
+        },
+      },
+      real: {
+        on: {
+          DIGITO: { target: "real", internal: true, actions: ["addToLexema"] },
+          EXP: { target: "s4", actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.NUM,
+          final: true,
+        },
+      },
+      exp: {
+        on: {
+          DIGITO: { target: "exp", internal: true, actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.NUM,
+          final: true,
+        },
+      },
+      maior: {
+        on: {
+          IGUAL: { target: "maior_igual", actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      maior_igual: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      menor: {
+        on: {
+          IGUAL: { target: "menor_igual", actions: ["addToLexema"] },
+          MAIOR: { target: "diferente", actions: ["addToLexema"] },
+          MENOS: { target: "rcb", actions: ["addToLexema"] },
+          RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
+        },
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      menor_igual: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      diferente: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      igual: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.OPR,
+          final: true,
+        },
+      },
+      rcb: {
+        on: {
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.RCB,
+          final: true,
+        },
+      },
+      id: {
+        on: {
+          LETRA: { target: "id", internal: true, actions: ["addToLexema"] },
+          DIGITO: { target: "id", internal: true, actions: ["addToLexema"] },
+          UNDERLINE: { target: "id", internal: true, actions: ["addToLexema"] },
+          "*": { target: "erro" },
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+        meta: {
+          token: TOKEN.ID,
+          final: true,
+        },
+      },
+      erro: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+      },
     },
   },
-});
+  {
+    actions: {
+      reset: assign<TokenContext, TokenEvent>({
+        lexema: "",
+        linha: 0,
+        coluna: 0,
+      }),
+      addToLexema: assign<TokenContext, TokenEvent>({
+        lexema: (context, event) => context.lexema.concat(event.char),
+        linha: (context, event) => (context.linha === 0 ? event.linha : context.linha),
+        coluna: (context, event) => (context.coluna === 0 ? event.coluna : context.coluna),
+      }),
+    },
+  }
+);
 
 export const tokenMachine = interpret(_tokenMachine);
