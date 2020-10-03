@@ -71,33 +71,6 @@ export class CharUtils {
     }
   }
 
-  static eExp(char: string): boolean {
-    const regex = /e|E/;
-    if (char.length === 1) {
-      return regex.test(char);
-    } else {
-      throw new Error("Multiple characters found.");
-    }
-  }
-
-  static eMais(char: string): boolean {
-    const regex = /\+/;
-    if (char.length === 1) {
-      return regex.test(char);
-    } else {
-      throw new Error("Multiple characters found.");
-    }
-  }
-
-  static eMenos(char: string): boolean {
-    const regex = /-/;
-    if (char.length === 1) {
-      return regex.test(char);
-    } else {
-      throw new Error("Multiple characters found.");
-    }
-  }
-
   static ePontoVirgula(char: string): boolean {
     const regex = /;/;
     if (char.length === 1) {
@@ -145,6 +118,24 @@ export class CharUtils {
 
   static eReturn(char: string): boolean {
     const regex = /\n/;
+    if (char.length === 1) {
+      return regex.test(char);
+    } else {
+      throw new Error("Multiple characters found.");
+    }
+  }
+
+  static eOPM(char: string): boolean {
+    const regex = /\+|-|\/|\*/;
+    if (char.length === 1) {
+      return regex.test(char);
+    } else {
+      throw new Error("Multiple characters found.");
+    }
+  }
+
+  static eEspaco(char: string): boolean {
+    const regex = / /;
     if (char.length === 1) {
       return regex.test(char);
     } else {
