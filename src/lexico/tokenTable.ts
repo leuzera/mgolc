@@ -29,23 +29,3 @@ export class TokenTable {
     return strTable;
   }
 }
-
-/* 
-Palavras-chave da linguagem MGOL
-+-----------+---------------------------------------------+
-| Token     | Significado                                 |
-+-----------+---------------------------------------------+
-| inicio    | Delimita o início do programa               |
-| varinicio | Delimita o início da declaração de variáveis|
-| varfim    | Delimita o fim da declaração de variáveis   |
-| escreva   | Imprime na saída padrão                     |
-| leia      | Lê da saída padrão                          |
-| se        | Estrutura condicional                       |
-| entao     | Elemento de estrutura condicional           |
-| fimse     | Elemento de estrutura condicional           |
-| fim       | Delimita o fim do programa                  |
-| inteiro   | Tipo de dado                                |
-| lit       | Tipo de dado                                |
-| real      | Tipo de dado                                |
-+-----------+---------------------------------------------+
-*/
