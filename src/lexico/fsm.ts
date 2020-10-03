@@ -58,7 +58,8 @@ type TokenState =
   | { value: "igual"; context: TokenContext }
   | { value: "rcb"; context: TokenContext }
   | { value: "id"; context: TokenContext }
-  | { value: "erro"; context: TokenContext };
+  | { value: "erro"; context: TokenContext }
+  | { value: "final"; context: TokenContext };
 
 const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
   {
@@ -89,19 +90,20 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           MENOR: { target: "menor", actions: ["addToLexema"] },
           MAIOR: { target: "maior", actions: ["addToLexema"] },
           IGUAL: { target: "igual", actions: ["addToLexema"] },
+          OUTRO: { target: "erro", actions: ["addToLexema"] },
         },
       },
       s1: {
         on: {
-          "*": { target: "s1", internal: true, actions: ["addToLexema"] },
           FC_CHAVE: { target: "comment", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "s1", internal: true, actions: ["addToLexema"] },
         },
       },
       comment: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.COMENTARIO,
@@ -110,15 +112,15 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       s2: {
         on: {
-          "*": { target: "s2", internal: true, actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
           ASPAS: { target: "lit", actions: ["addToLexema"] },
+          "*": { target: "s2", internal: true, actions: ["addToLexema"] },
         },
       },
       lit: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.LITERAL,
@@ -127,8 +129,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       pt_v: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.PT_V,
@@ -137,8 +139,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       fc_p: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.FC_P,
@@ -147,8 +149,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       ab_p: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.AB_P,
@@ -157,8 +159,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       eof: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.EOF,
@@ -167,8 +169,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       opm: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.OPM,
@@ -178,8 +180,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       s3: {
         on: {
           DIGITO: { target: "real", actions: ["addToLexema"] },
-          "*": "erro",
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": "erro",
         },
       },
       s4: {
@@ -187,24 +189,24 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           MAIS: { target: "s5", actions: ["addToLexema"] },
           MENOS: { target: "s5", actions: ["addToLexema"] },
           DIGITO: { target: "exp", actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
       },
       s5: {
         on: {
           DIGITO: { target: "exp", actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
       },
       int: {
         on: {
           DIGITO: { target: "int", internal: true, actions: ["addToLexema"] },
-          EXP: { target: "s4", actions: ["addToLexema"] },
+          LETRA: { target: "s4", cond: "eExp", actions: ["addToLexema"] },
           PONTO: { target: "s3", actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -214,9 +216,9 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       real: {
         on: {
           DIGITO: { target: "real", internal: true, actions: ["addToLexema"] },
-          EXP: { target: "s4", actions: ["addToLexema"] },
-          "*": { target: "erro" },
+          LETRA: { target: "s4", cond: "eExp", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -226,8 +228,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       exp: {
         on: {
           DIGITO: { target: "exp", internal: true, actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -237,8 +239,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       maior: {
         on: {
           IGUAL: { target: "maior_igual", actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -247,8 +249,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       maior_igual: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -259,7 +261,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         on: {
           IGUAL: { target: "menor_igual", actions: ["addToLexema"] },
           MAIOR: { target: "diferente", actions: ["addToLexema"] },
-          MENOS: { target: "rcb", actions: ["addToLexema"] },
+          OPM: { target: "rcb", cond: "eMenos", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
           "*": { target: "erro" },
         },
@@ -270,8 +272,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       menor_igual: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -280,8 +282,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       diferente: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
 
         meta: {
@@ -291,8 +293,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       igual: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -301,8 +303,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       },
       rcb: {
         on: {
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.RCB,
@@ -314,8 +316,8 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           LETRA: { target: "id", internal: true, actions: ["addToLexema"] },
           DIGITO: { target: "id", internal: true, actions: ["addToLexema"] },
           UNDERLINE: { target: "id", internal: true, actions: ["addToLexema"] },
-          "*": { target: "erro" },
           RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "erro" },
         },
         meta: {
           token: TOKEN.ID,
@@ -323,6 +325,11 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
       },
       erro: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+        },
+      },
+      final: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
         },
@@ -341,6 +348,10 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         linha: (context, event) => (context.linha === 0 ? event.linha : context.linha),
         coluna: (context, event) => (context.coluna === 0 ? event.coluna : context.coluna),
       }),
+    },
+    guards: {
+      eMenos: (context, event) => event.char === "-",
+      eExp: (context, event) => event.char === "E" || event.char === "e",
     },
   }
 );
