@@ -15,5 +15,5 @@ while (true) {
     break;
   }
 
-  console.info(token.toString());
+  console.info(`${token}`);
 }
