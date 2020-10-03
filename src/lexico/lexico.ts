@@ -1,49 +1,117 @@
 import fs from "fs";
 import { CharUtils } from "../util";
-import { Token, TOKEN } from "./token";
+import { Token, TOKEN, RESERVADAS } from "./token";
 import { TokenTable } from "./tokenTable";
 import { TokenErro, ERRO } from "./erro";
 import { tokenMachine } from "./fsm";
 
 export class Lexico {
   path: string;
-  posicao: number;
   linha: number;
   coluna: number;
+  posicao: number;
   tabela: TokenTable;
 
   constructor(path: string) {
     this.path = path;
 
+    this.linha = 1;
+    this.coluna = 1;
     this.posicao = 0;
-    this.linha = 0;
-    this.coluna = 0;
 
     this.tabela = new TokenTable();
   }
 
-  protected parseLine(line: string): void {
-    for (const char of line) {
-      console.log(char);
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected parseChar(char: string) {
+    if (CharUtils.eAbreChave(char)) {
+      return "AB_CHAVE";
+    } else if (CharUtils.eFechaChave(char)) {
+      return "FC_CHAVE";
+    } else if (CharUtils.eAbreParentese(char)) {
+      return "AB_P";
+    } else if (CharUtils.eFechaParentese(char)) {
+      return "FC_P";
+    } else if (CharUtils.eAspas(char)) {
+      return "ASPAS";
+    } else if (CharUtils.eIgual(char)) {
+      return "IGUAL";
+    } else if (CharUtils.eMaior(char)) {
+      return "MAIOR";
+    } else if (CharUtils.eMenor(char)) {
+      return "MENOR";
+    } else if (CharUtils.ePonto(char)) {
+      return "PONTO";
+    } else if (CharUtils.ePontoVirgula(char)) {
+      return "PONTO_VIRGULA";
+    } else if (CharUtils.eReturn(char)) {
+      return "RETURN";
+    } else if (CharUtils.eUnderline(char)) {
+      return "UNDERLINE";
+    } else if (CharUtils.eDigito(char)) {
+      return "DIGITO";
+    } else if (CharUtils.eLetra(char)) {
+      return "LETRA";
+    } else if (CharUtils.eOPM(char)) {
+      return "OPM";
+    } else if (CharUtils.eEspaco(char)) {
+      return "ESPACO";
+    } else {
+      return "OUTRO";
+    }
+  }
+
+  protected parseLine(linha: string): void {
+    this.coluna = 1;
+
+    for (const char of linha) {
+      const tipoChar = this.parseChar(char);
+      tokenMachine.send(tipoChar, { char: char, linha: this.linha, coluna: this.coluna });
+
+      this.coluna += 1;
     }
   }
 
   scan(): Lexico {
+    tokenMachine
+      .onTransition((state, event) => {
+        if (state.matches("erro")) {
+          const stateMeta: any = Object.values(state.history?.meta)[0];
+
+          const lexema: string = state.context.lexema;
+          const linha: number = state.context.linha;
+          const coluna: number = state.context.coluna;
+          const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
+
+          this.tabela.add(new Token(token, lexema, linha, coluna));
+          tokenMachine.send("RESET");
+        }
+      })
+      .start();
+
     try {
       const data = fs.readFileSync(this.path, "utf-8");
       const lines = data.split(/\r?\n/);
 
       for (const line of lines) {
         this.parseLine(line);
+        this.linha += 1;
       }
     } catch (error) {
       console.error(error);
     }
 
+    tokenMachine.stop();
     return this;
   }
 
   next(): Token | undefined {
-    return this.tabela.get(1)?.pop();
+    while (!this.tabela.get(this.posicao) || this.tabela.get(this.posicao)?.length === 0) {
+      this.posicao += 1;
+
+      if (this.posicao > this.linha) break;
+    }
+
+    return this.tabela.get(this.posicao)?.shift();
   }
 }
