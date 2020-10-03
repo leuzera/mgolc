@@ -61,14 +61,20 @@ export class Lexico {
     }
   }
 
-  protected parseLine(linha: string): void {
+  protected parseSource(source: string): void {
     this.coluna = 1;
 
-    for (const char of linha) {
+    for (const char of source) {
       const tipoChar = this.parseChar(char);
+
       tokenMachine.send(tipoChar, { char: char, linha: this.linha, coluna: this.coluna });
 
-      this.coluna += 1;
+      if (tipoChar === "RETURN") {
+        this.linha += 1;
+        this.coluna = 1;
+      } else {
+        this.coluna += 1;
+      }
     }
   }
 
@@ -81,22 +87,31 @@ export class Lexico {
           const lexema: string = state.context.lexema;
           const linha: number = state.context.linha;
           const coluna: number = state.context.coluna;
-          const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
 
-          this.tabela.add(new Token(token, lexema, linha, coluna));
-          tokenMachine.send("RESET");
+          if (state.history?.matches("inicio") || !stateMeta.final) {
+            // Se o erro foi gerado a partir do inicio ou de um estado não final
+            // então o erro é real;
+            this.tabela.add(new TokenErro(lexema, ERRO.CARACTERE_INVALIDO, linha, coluna));
+            tokenMachine.send("RESET");
+          } else {
+            // Caso contrário, reiniciamos a maquina e repetimos o evento
+            const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
+            this.tabela.add(new Token(token, lexema, linha, coluna));
+            tokenMachine.send("RESET");
+
+            // Se o evento que gerou um erro não for um RETURN or um ESPACO, repita
+            if (event.type !== "RETURN" && event.type !== "ESPACO") {
+              tokenMachine.send(event.type, { char: event.char, linha: event.linha, coluna: event.coluna });
+            }
+          }
         }
       })
       .start();
 
     try {
       const data = fs.readFileSync(this.path, "utf-8");
-      const lines = data.split(/\r?\n/);
 
-      for (const line of lines) {
-        this.parseLine(line);
-        this.linha += 1;
-      }
+      this.parseSource(data);
     } catch (error) {
       console.error(error);
     }
