@@ -81,6 +81,24 @@ export class Lexico {
   scan(): Lexico {
     tokenMachine
       .onTransition((state, event) => {
+        if (state.matches("final")) {
+          const stateMeta: any = Object.values(state.history?.meta)[0];
+
+          const lexema: string = state.context.lexema;
+          const linha: number = state.context.linha;
+          const coluna: number = state.context.coluna;
+
+          const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
+
+          this.tabela.add(new Token(token, lexema, linha, coluna));
+          tokenMachine.send("RESET");
+
+          // Se o evento que gerou um erro não for um RETURN or um ESPACO, repita
+          if (event.type !== "RETURN" && event.type !== "ESPACO") {
+            tokenMachine.send(event.type, { char: event.char, linha: event.linha, coluna: event.coluna });
+          }
+        }
+
         if (state.matches("erro")) {
           const stateMeta: any = Object.values(state.history?.meta)[0];
 
@@ -88,22 +106,8 @@ export class Lexico {
           const linha: number = state.context.linha;
           const coluna: number = state.context.coluna;
 
-          if (state.history?.matches("inicio") || !stateMeta.final) {
-            // Se o erro foi gerado a partir do inicio ou de um estado não final
-            // então o erro é real;
-            this.tabela.add(new TokenErro(lexema, ERRO.CARACTERE_INVALIDO, linha, coluna));
-            tokenMachine.send("RESET");
-          } else {
-            // Caso contrário, reiniciamos a maquina e repetimos o evento
-            const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
-            this.tabela.add(new Token(token, lexema, linha, coluna));
-            tokenMachine.send("RESET");
-
-            // Se o evento que gerou um erro não for um RETURN or um ESPACO, repita
-            if (event.type !== "RETURN" && event.type !== "ESPACO") {
-              tokenMachine.send(event.type, { char: event.char, linha: event.linha, coluna: event.coluna });
-            }
-          }
+          this.tabela.add(new TokenErro(lexema, ERRO.CARACTERE_INVALIDO, linha, coluna));
+          tokenMachine.send("RESET");
         }
       })
       .start();

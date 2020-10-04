@@ -103,7 +103,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       comment: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.COMENTARIO,
@@ -120,7 +120,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       lit: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.LITERAL,
@@ -130,7 +130,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       pt_v: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.PT_V,
@@ -140,7 +140,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       fc_p: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.FC_P,
@@ -150,7 +150,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       ab_p: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.AB_P,
@@ -160,7 +160,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       eof: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.EOF,
@@ -170,7 +170,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       opm: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPM,
@@ -206,7 +206,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           LETRA: { target: "s4", cond: "eExp", actions: ["addToLexema"] },
           PONTO: { target: "s3", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -218,7 +218,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           DIGITO: { target: "real", internal: true, actions: ["addToLexema"] },
           LETRA: { target: "s4", cond: "eExp", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -229,7 +229,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         on: {
           DIGITO: { target: "exp", internal: true, actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.NUM,
@@ -240,7 +240,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         on: {
           IGUAL: { target: "maior_igual", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -250,7 +250,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       maior_igual: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -263,7 +263,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           MAIOR: { target: "diferente", actions: ["addToLexema"] },
           OPM: { target: "rcb", cond: "eMenos", actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -273,7 +273,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       menor_igual: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -283,7 +283,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       diferente: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
 
         meta: {
@@ -294,7 +294,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       igual: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPR,
@@ -304,7 +304,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
       rcb: {
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.RCB,
@@ -317,7 +317,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
           DIGITO: { target: "id", internal: true, actions: ["addToLexema"] },
           UNDERLINE: { target: "id", internal: true, actions: ["addToLexema"] },
           RESET: { target: "inicio", actions: ["reset"] },
-          "*": { target: "erro" },
+          "*": { target: "final" },
         },
         meta: {
           token: TOKEN.ID,
