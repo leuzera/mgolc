@@ -210,6 +210,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.NUM,
+          tipo: "int",
           final: true,
         },
       },
@@ -222,6 +223,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.NUM,
+          tipo: "real",
           final: true,
         },
       },
@@ -233,6 +235,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.NUM,
+          tipo: "real",
           final: true,
         },
       },

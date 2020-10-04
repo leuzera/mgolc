@@ -89,8 +89,9 @@ export class Lexico {
           const coluna: number = state.context.coluna;
 
           const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
+          const tipo: string = stateMeta.tipo || undefined;
 
-          this.tabela.add(new Token(token, lexema, linha, coluna));
+          this.tabela.add(new Token(token, lexema, linha, coluna, tipo));
           tokenMachine.send("RESET");
 
           // Se o evento que gerou um erro não for um RETURN or um ESPACO, repita
