@@ -1,5 +1,4 @@
-import { TOKEN, Token } from "./token";
-import { TokenErro } from "./erro";
+import { TOKEN } from "./token";
 import { createMachine, interpret, assign } from "xstate";
 
 interface TokenContext {
