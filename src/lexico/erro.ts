@@ -24,6 +24,6 @@ export class TokenErro extends Token {
   }
 
   toString(): string {
-    return `[${this.linha},${this.coluna}] <ERRO, ERRO> ${this.lexema} | ${this.errorString()}`;
+    return `[${this.linha},${this.coluna}] <${this.token}, ${this.errorString()}> ${this.lexema}`;
   }
 }
