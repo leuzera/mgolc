@@ -3,7 +3,7 @@
 import { argumentos } from "./util";
 import { Lexico } from "./lexico";
 
-const lexico = new Lexico(argumentos.args[0]).scan();
+const lexico = new Lexico(argumentos.args[0]);
 
 console.log("[L,C] <TOKEN, TIPO> Lexema");
 

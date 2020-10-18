@@ -1,5 +1,5 @@
 export class CharUtils {
-  static eLetra(char: string): boolean {
+  private static eLetra(char: string): boolean {
     const regex = /[a-z]|[A-Z]/;
     if (char.length === 1) {
       return regex.test(char);
@@ -8,7 +8,7 @@ export class CharUtils {
     }
   }
 
-  static eDigito(char: string): boolean {
+  private static eDigito(char: string): boolean {
     const regex = /[0-9]/;
     if (char.length === 1) {
       return regex.test(char);
@@ -17,7 +17,7 @@ export class CharUtils {
     }
   }
 
-  static eAbreChave(char: string): boolean {
+  private static eAbreChave(char: string): boolean {
     const regex = /\{/;
     if (char.length === 1) {
       return regex.test(char);
@@ -26,7 +26,7 @@ export class CharUtils {
     }
   }
 
-  static eFechaChave(char: string): boolean {
+  private static eFechaChave(char: string): boolean {
     const regex = /\}/;
     if (char.length === 1) {
       return regex.test(char);
@@ -35,7 +35,7 @@ export class CharUtils {
     }
   }
 
-  static eAbreParentese(char: string): boolean {
+  private static eAbreParentese(char: string): boolean {
     const regex = /\(/;
     if (char.length === 1) {
       return regex.test(char);
@@ -44,7 +44,7 @@ export class CharUtils {
     }
   }
 
-  static eFechaParentese(char: string): boolean {
+  private static eFechaParentese(char: string): boolean {
     const regex = /\)/;
     if (char.length === 1) {
       return regex.test(char);
@@ -53,7 +53,7 @@ export class CharUtils {
     }
   }
 
-  static eAspas(char: string): boolean {
+  private static eAspas(char: string): boolean {
     const regex = /"/;
     if (char.length === 1) {
       return regex.test(char);
@@ -62,7 +62,7 @@ export class CharUtils {
     }
   }
 
-  static ePonto(char: string): boolean {
+  private static ePonto(char: string): boolean {
     const regex = /\./;
     if (char.length === 1) {
       return regex.test(char);
@@ -71,7 +71,7 @@ export class CharUtils {
     }
   }
 
-  static ePontoVirgula(char: string): boolean {
+  private static ePontoVirgula(char: string): boolean {
     const regex = /;/;
     if (char.length === 1) {
       return regex.test(char);
@@ -80,7 +80,7 @@ export class CharUtils {
     }
   }
 
-  static eMenor(char: string): boolean {
+  private static eMenor(char: string): boolean {
     const regex = /</;
     if (char.length === 1) {
       return regex.test(char);
@@ -89,7 +89,7 @@ export class CharUtils {
     }
   }
 
-  static eMaior(char: string): boolean {
+  private static eMaior(char: string): boolean {
     const regex = />/;
     if (char.length === 1) {
       return regex.test(char);
@@ -98,7 +98,7 @@ export class CharUtils {
     }
   }
 
-  static eIgual(char: string): boolean {
+  private static eIgual(char: string): boolean {
     const regex = /=/;
     if (char.length === 1) {
       return regex.test(char);
@@ -107,7 +107,7 @@ export class CharUtils {
     }
   }
 
-  static eUnderline(char: string): boolean {
+  private static eUnderline(char: string): boolean {
     const regex = /_/;
     if (char.length === 1) {
       return regex.test(char);
@@ -116,7 +116,7 @@ export class CharUtils {
     }
   }
 
-  static eReturn(char: string): boolean {
+  private static eReturn(char: string): boolean {
     const regex = /\n/;
     if (char.length === 1) {
       return regex.test(char);
@@ -125,7 +125,7 @@ export class CharUtils {
     }
   }
 
-  static eOPM(char: string): boolean {
+  private static eOPM(char: string): boolean {
     const regex = /\+|-|\/|\*/;
     if (char.length === 1) {
       return regex.test(char);
@@ -134,12 +134,51 @@ export class CharUtils {
     }
   }
 
-  static eEspaco(char: string): boolean {
+  private static eEspaco(char: string): boolean {
     const regex = / /;
     if (char.length === 1) {
       return regex.test(char);
     } else {
       throw new Error("Multiple characters found.");
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  static parseChar(char: string) {
+    if (this.eAbreChave(char)) {
+      return "AB_CHAVE";
+    } else if (this.eFechaChave(char)) {
+      return "FC_CHAVE";
+    } else if (this.eAbreParentese(char)) {
+      return "AB_P";
+    } else if (this.eFechaParentese(char)) {
+      return "FC_P";
+    } else if (this.eAspas(char)) {
+      return "ASPAS";
+    } else if (this.eIgual(char)) {
+      return "IGUAL";
+    } else if (this.eMaior(char)) {
+      return "MAIOR";
+    } else if (this.eMenor(char)) {
+      return "MENOR";
+    } else if (this.ePonto(char)) {
+      return "PONTO";
+    } else if (this.ePontoVirgula(char)) {
+      return "PONTO_VIRGULA";
+    } else if (this.eReturn(char)) {
+      return "RETURN";
+    } else if (this.eUnderline(char)) {
+      return "UNDERLINE";
+    } else if (this.eDigito(char)) {
+      return "DIGITO";
+    } else if (this.eLetra(char)) {
+      return "LETRA";
+    } else if (this.eOPM(char)) {
+      return "OPM";
+    } else if (CharUtils.eEspaco(char)) {
+      return "ESPACO";
+    } else {
+      return "OUTRO";
     }
   }
 }

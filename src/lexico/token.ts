@@ -31,7 +31,7 @@ export enum RESERVADAS {
 export class Token {
   token: TOKEN | RESERVADAS;
   lexema: string;
-  linha: number;
+  linha?: number;
   coluna?: number;
   tipo?: string;
 
@@ -43,7 +43,7 @@ export class Token {
    * @param coluna Coluna do primeiro caractere do lexema
    * @param tipo Tipo do lexema
    */
-  constructor(token: TOKEN | RESERVADAS, lexema: string, linha: number, coluna?: number, tipo?: string) {
+  constructor(token: TOKEN | RESERVADAS, lexema: string, linha?: number, coluna?: number, tipo?: string) {
     this.token = token;
     this.lexema = lexema;
     this.linha = linha;

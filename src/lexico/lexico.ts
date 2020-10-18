@@ -1,16 +1,20 @@
 import fs from "fs";
+import { debuglog } from "util";
+
 import { CharUtils } from "../util";
 import { Token, TOKEN, RESERVADAS } from "./token";
-import { TokenTable } from "./tokenTable";
-import { TokenErro, ERRO } from "./erro";
+import { SymbolTable } from "./symbolTable";
 import { tokenMachine } from "./fsm";
+
+const logger = debuglog("mgolc-lexico");
 
 export class Lexico {
   path: string;
   linha: number;
   coluna: number;
   posicao: number;
-  tabela: TokenTable;
+  tabela: SymbolTable;
+  file: Buffer;
 
   constructor(path: string) {
     this.path = path;
@@ -19,55 +23,51 @@ export class Lexico {
     this.coluna = 1;
     this.posicao = 0;
 
-    this.tabela = new TokenTable();
+    this.file = fs.readFileSync(path);
+
+    this.tabela = new SymbolTable();
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  protected parseChar(char: string) {
-    if (CharUtils.eAbreChave(char)) {
-      return "AB_CHAVE";
-    } else if (CharUtils.eFechaChave(char)) {
-      return "FC_CHAVE";
-    } else if (CharUtils.eAbreParentese(char)) {
-      return "AB_P";
-    } else if (CharUtils.eFechaParentese(char)) {
-      return "FC_P";
-    } else if (CharUtils.eAspas(char)) {
-      return "ASPAS";
-    } else if (CharUtils.eIgual(char)) {
-      return "IGUAL";
-    } else if (CharUtils.eMaior(char)) {
-      return "MAIOR";
-    } else if (CharUtils.eMenor(char)) {
-      return "MENOR";
-    } else if (CharUtils.ePonto(char)) {
-      return "PONTO";
-    } else if (CharUtils.ePontoVirgula(char)) {
-      return "PONTO_VIRGULA";
-    } else if (CharUtils.eReturn(char)) {
-      return "RETURN";
-    } else if (CharUtils.eUnderline(char)) {
-      return "UNDERLINE";
-    } else if (CharUtils.eDigito(char)) {
-      return "DIGITO";
-    } else if (CharUtils.eLetra(char)) {
-      return "LETRA";
-    } else if (CharUtils.eOPM(char)) {
-      return "OPM";
-    } else if (CharUtils.eEspaco(char)) {
-      return "ESPACO";
-    } else {
-      return "OUTRO";
+  private nextChar(): string | undefined {
+    const charCode = this.file[this.posicao];
+
+    if (!charCode) {
+      return undefined;
     }
+
+    const char = String.fromCharCode(charCode);
+
+    this.posicao += 1;
+    return char;
   }
 
-  protected parseSource(source: string): void {
-    this.coluna = 1;
+  next(): Token | undefined {
+    let char: string | undefined;
 
-    for (const char of source) {
-      const tipoChar = this.parseChar(char);
+    if (this.posicao >= this.file.length) {
+      return undefined;
+    }
+
+    logger("Iniciando maquina de estados.");
+    tokenMachine.start();
+
+    while ((char = this.nextChar())) {
+      const tipoChar = CharUtils.parseChar(char);
+
+      logger(`[${this.posicao}${this.linha}${this.coluna}] ${tipoChar} ${char}`);
+
+      if (tokenMachine.nextState(tipoChar).matches("final")) {
+        this.posicao -= 1;
+        break;
+      }
 
       tokenMachine.send(tipoChar, { char: char, linha: this.linha, coluna: this.coluna });
+
+      if (tokenMachine.state.matches("erro")) {
+        console.error(`Erro: ${char} não é um caractere válido.`);
+        console.error(`${this.path}:${this.linha},${this.coluna}`);
+        break;
+      }
 
       if (tipoChar === "RETURN") {
         this.linha += 1;
@@ -76,62 +76,27 @@ export class Lexico {
         this.coluna += 1;
       }
     }
-  }
 
-  scan(): Lexico {
-    tokenMachine
-      .onTransition((state, event) => {
-        if (state.matches("final")) {
-          const stateMeta: any = Object.values(state.history?.meta)[0];
+    const estadoMeta: any = Object.values(tokenMachine.state.meta)[0];
 
-          const lexema: string = state.context.lexema;
-          const linha: number = state.context.linha;
-          const coluna: number = state.context.coluna;
+    const lexema: string = tokenMachine.state.context.lexema;
+    const linha: number = tokenMachine.state.context.linha;
+    const coluna: number = tokenMachine.state.context.coluna;
 
-          const token: TOKEN | RESERVADAS = Token.getReservada(lexema) || stateMeta.token;
-          const tipo: string = stateMeta.tipo || undefined;
+    const tipoToken: TOKEN | RESERVADAS = Token.getReservada(lexema) || estadoMeta?.token;
+    const tipo: string = estadoMeta?.tipo || undefined;
 
-          this.tabela.add(new Token(token, lexema, linha, coluna, tipo));
-          tokenMachine.send("RESET");
-
-          // Se o evento que gerou um erro não for um RETURN or um ESPACO, repita
-          if (event.type !== "RETURN" && event.type !== "ESPACO") {
-            tokenMachine.send(event.type, { char: event.char, linha: event.linha, coluna: event.coluna });
-          }
-        }
-
-        if (state.matches("erro")) {
-          const stateMeta: any = Object.values(state.history?.meta)[0];
-
-          const lexema: string = state.context.lexema;
-          const linha: number = state.context.linha;
-          const coluna: number = state.context.coluna;
-
-          this.tabela.add(new TokenErro(lexema, ERRO.CARACTERE_INVALIDO, linha, coluna));
-          tokenMachine.send("RESET");
-        }
-      })
-      .start();
-
-    try {
-      const data = fs.readFileSync(this.path, "utf-8");
-
-      this.parseSource(data);
-    } catch (error) {
-      console.error(error);
-    }
+    const token = new Token(tipoToken, lexema, linha, coluna, tipo);
 
     tokenMachine.stop();
-    return this;
-  }
 
-  next(): Token | undefined {
-    while (!this.tabela.get(this.posicao) || this.tabela.get(this.posicao)?.length === 0) {
-      this.posicao += 1;
+    logger("Maquina de estados finalizada.");
+    logger(`TOKEN: ${token}`);
 
-      if (this.posicao > this.linha) break;
+    if (token.tipo === TOKEN.ID && !this.tabela.has(token.lexema)) {
+      this.tabela.add(token);
     }
 
-    return this.tabela.get(this.posicao)?.shift();
+    return token;
   }
 }

@@ -7,7 +7,7 @@ interface TokenContext {
   coluna: number;
 }
 
-type TokenEvent =
+export type TokenEvent =
   | { type: "DIGITO"; char: string; linha: number; coluna: number }
   | { type: "LETRA"; char: string; linha: number; coluna: number }
   | { type: "AB_CHAVE"; char: string; linha: number; coluna: number }

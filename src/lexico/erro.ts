@@ -1,29 +1,24 @@
-import { Token, TOKEN } from "./token";
-
-export enum ERRO {
-  CARACTERE_INVALIDO = "CARACTERE_INVALIDO",
+export enum ERRO_LEXICO {
+  CARACTERE_INVALIDO,
+  NUMERO_INVALIDO,
 }
 
-export class TokenErro extends Token {
-  tipoErro: ERRO;
+export class ErroLexico extends Error {
+  tipo: ERRO_LEXICO;
+  linha?: number;
+  coluna?: number;
+  arquivo?: string;
 
-  constructor(lexema: string, tipoErro: ERRO, linha: number, coluna?: number) {
-    super(TOKEN.ERRO, lexema, linha, coluna);
-    this.tipoErro = tipoErro;
-  }
+  constructor(tipo: ERRO_LEXICO, message?: string, options?: { arquivo: string; linha: number; coluna: number }) {
+    super();
+    this.name = "ErroLexico";
 
-  errorString(): string {
-    switch (this.tipoErro) {
-      case ERRO.CARACTERE_INVALIDO:
-        return "caractere inválido";
-        break;
-      default:
-        return "erro desconhecido";
-        break;
-    }
-  }
+    if (message) this.message = message;
 
-  toString(): string {
-    return `[${this.linha},${this.coluna}] <${this.token}, ${this.errorString()}> ${this.lexema}`;
+    this.tipo = tipo;
+
+    this.arquivo = options?.arquivo;
+    this.linha = options?.linha;
+    this.coluna = options?.coluna;
   }
 }
