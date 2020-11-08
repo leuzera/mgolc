@@ -1,31 +1,6 @@
-class Operacao {
-  tipo: "shift" | "reduce" | "goto" | "erro";
-  valor: number;
-
-  constructor(operacao: string) {
-    if (!/^([RSE]?)\d+$/.test(operacao)) {
-      throw new Error(`${operacao} não é uma operação válida.`);
-    }
-
-    const [tipo, valor] = operacao.split(/(\d+)/);
-
-    this.valor = Number.parseInt(valor as string);
-
-    switch (tipo) {
-      case "R":
-        this.tipo = "reduce";
-        break;
-      case "S":
-        this.tipo = "shift";
-        break;
-      case "E":
-        this.tipo = "erro";
-        break;
-      default:
-        this.tipo = "goto";
-    }
-  }
-}
+import fs from "fs";
+import Papa from "papaparse";
+import { Operacao } from "./operacao";
 
 export class TabelaSintatica {
   tabela: Map<number, Map<string, Operacao>>;
@@ -34,16 +9,36 @@ export class TabelaSintatica {
     this.tabela = new Map<number, Map<string, Operacao>>();
   }
 
-  get(estado: number, simbolo: string): Operacao | undefined {
+  static fromCsv(path: string): TabelaSintatica {
+    const csvFile = fs.readFileSync(path).toString();
+    const { data, errors } = Papa.parse(csvFile, {
+      header: true,
+    });
+
+    if (errors.length !== 0) errors.map((err) => console.error(err));
+
+    const tabela = new TabelaSintatica();
+    for (const row of data) {
+      const { estado, ...simbolos } = row as Record<string, string>;
+
+      for (const simbolo of Object.keys(simbolos)) {
+        tabela.set(Number.parseInt(estado), simbolo, new Operacao(simbolos[simbolo]));
+      }
+    }
+
+    return tabela;
+  }
+
+  public get(estado: number, simbolo: string): Operacao | undefined {
     return this.tabela.get(estado)?.get(simbolo);
   }
 
-  set(estado: number, simbolo: string, value: Operacao): void {
+  public set(estado: number, simbolo: string, value: Operacao): void {
     if (!this.tabela.has(estado)) this.tabela.set(estado, new Map<string, Operacao>());
     this.tabela.get(estado)?.set(simbolo, value);
   }
 
-  delete(estado: number, simbolo?: string): boolean {
+  public delete(estado: number, simbolo?: string): boolean {
     if (this.tabela.has(estado)) {
       const _estado = this.tabela.get(estado);
 
@@ -61,7 +56,7 @@ export class TabelaSintatica {
     }
   }
 
-  has(estado: number, simbolo?: string): boolean {
+  public has(estado: number, simbolo?: string): boolean {
     if (this.tabela.has(estado)) {
       if (simbolo) {
         const _estado = this.tabela.get(estado);
@@ -76,5 +71,9 @@ export class TabelaSintatica {
     } else {
       return false;
     }
+  }
+
+  public toString() {
+    return `${this.tabela.toString()}`;
   }
 }
