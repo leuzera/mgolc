@@ -4,9 +4,14 @@
   "compilerOptions": {
     "module": "commonjs",
     "lib": ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
-    "target": "es2017",
-    "outDir": "bin/dist",
-    "rootDir": "src",
+    "target": "es2019",
+    "outDir": "./bin/dist",
+    "baseUrl": "./src",
+    "paths": {
+      "util/*": ["util/*"],
+      "lexico/*": ["lexico/*"],
+      "sintatico/*": ["sintatico/*"]
+    },
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": true,
@@ -15,5 +20,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*.ts"]
 }
