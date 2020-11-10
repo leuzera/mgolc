@@ -1,17 +1,18 @@
 export class Operacao {
   tipo: "shift" | "reduce" | "goto" | "erro" | "ACC";
   valor: number;
+  operacao: string;
 
   constructor(operacao: string) {
-    if (!/^([RSE]?)(\d+)$/.test(operacao) && operacao !== "ACC") {
-      throw new Error(`${operacao} não é uma operação válida.`);
-    }
-
+    this.operacao = operacao;
     const [tipo, valor] = operacao.split(/(\d+)/);
 
     this.valor = Number.parseInt(valor as string);
 
     switch (tipo) {
+      case "ACC":
+        this.tipo = "ACC";
+        break;
       case "R":
         this.tipo = "reduce";
         break;
@@ -27,6 +28,6 @@ export class Operacao {
   }
 
   public toString() {
-    return `${this.tipo}${this.valor}`;
+    return `${this.tipo} ${this.valor}`;
   }
 }
