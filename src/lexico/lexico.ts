@@ -6,7 +6,7 @@ import { Token, TOKEN, RESERVADAS } from "./token";
 import { SymbolTable } from "./symbolTable";
 import { tokenMachine } from "./fsm";
 
-const logger = debuglog("mgolc-lexico");
+const logger = debuglog("mgolc:lexico");
 
 export class Lexico {
   path: string;
@@ -48,15 +48,14 @@ export class Lexico {
       return undefined;
     }
 
-    logger("Iniciando maquina de estados.");
     tokenMachine.start();
 
     while ((char = this.nextChar())) {
       const tipoChar = CharUtils.parseChar(char);
 
-      logger(`[${this.posicao}${this.linha}${this.coluna}] ${tipoChar} ${char}`);
-
-      if (tokenMachine.nextState(tipoChar).matches("final")) {
+      if (
+        tokenMachine.nextState({ type: tipoChar, char: char, linha: this.linha, coluna: this.coluna }).matches("final")
+      ) {
         this.posicao -= 1;
         break;
       }
@@ -90,7 +89,6 @@ export class Lexico {
 
     tokenMachine.stop();
 
-    logger("Maquina de estados finalizada.");
     logger(`TOKEN: ${token}`);
 
     if (token.tipo === TOKEN.ID && !this.tabela.has(token.lexema)) {
