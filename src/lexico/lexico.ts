@@ -23,8 +23,7 @@ export class Lexico {
     this.coluna = 1;
     this.posicao = 0;
 
-    const file = fs.readFileSync(path);
-    this.file = Buffer.concat([file, Buffer.from("$", "utf-8")], file.length + 1);
+    this.file = fs.readFileSync(path);
     this.tabela = new SymbolTable();
   }
 
@@ -74,6 +73,10 @@ export class Lexico {
       } else {
         this.coluna += 1;
       }
+    }
+
+    if (!char) {
+      return new Token(RESERVADAS.EOF, "$", this.linha, this.coluna);
     }
 
     const estadoMeta: any = Object.values(tokenMachine.state.meta)[0];
