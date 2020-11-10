@@ -23,8 +23,8 @@ export class Lexico {
     this.coluna = 1;
     this.posicao = 0;
 
-    this.file = fs.readFileSync(path);
-
+    const file = fs.readFileSync(path);
+    this.file = Buffer.concat([file, Buffer.from("$", "utf-8")], file.length + 1);
     this.tabela = new SymbolTable();
   }
 
