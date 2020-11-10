@@ -26,6 +26,7 @@ export enum RESERVADAS {
   INTEIRO = "inteiro",
   LIT = "lit",
   REAL = "real",
+  EOF = "eof",
 }
 
 export class Token {
@@ -81,6 +82,8 @@ export class Token {
         return RESERVADAS.LIT;
       case "real":
         return RESERVADAS.REAL;
+      case "$":
+        return RESERVADAS.EOF;
       default:
         return undefined;
     }
