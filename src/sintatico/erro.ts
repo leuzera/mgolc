@@ -1,23 +1,23 @@
 import { Token } from "../lexico";
 
 export enum ERRO_SINTATICO {
-  E1,
-  E2,
-  E3,
-  E4,
-  E5,
-  E6,
-  E7,
-  E8,
-  E9,
-  E10,
-  E11,
-  E12,
-  E13,
-  E14,
-  E15,
-  E404,
-  E500,
+  E1 = "E1",
+  E2 = "E2",
+  E3 = "E3",
+  E4 = "E4",
+  E5 = "E5",
+  E6 = "E6",
+  E7 = "E7",
+  E8 = "E8",
+  E9 = "E9",
+  E10 = "E10",
+  E11 = "E11",
+  E12 = "E12",
+  E13 = "E13",
+  E14 = "E14",
+  E15 = "E15",
+  E404 = "E404",
+  E500 = "E500",
 }
 
 export class ErroSintatico {
@@ -29,7 +29,7 @@ export class ErroSintatico {
     this.lexema = lexema;
   }
 
-  erroString() {
+  erroString(): string {
     switch (this.erro) {
       case ERRO_SINTATICO.E1:
         return "Inicio do programa não encontrado.";
@@ -70,10 +70,10 @@ export class ErroSintatico {
     }
   }
 
-  toString() {
+  toString(): string {
     return `
-    ERRO ${this.erro}.
-    ${this.erroString()}
+    ERRO ${this.erro}. ${this.erroString()}
+    ${this.lexema ? this.lexema : ""}
     `;
   }
 }
