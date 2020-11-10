@@ -1,6 +1,6 @@
 {
   "name": "mgol-parser",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Implementação analisador Léxico para linguagem MGOL",
   "main": "dist/index.js",
   "bin": {
