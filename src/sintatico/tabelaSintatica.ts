@@ -13,6 +13,7 @@ export class TabelaSintatica {
     const csvFile = fs.readFileSync(path).toString();
     const { data, errors } = Papa.parse(csvFile, {
       header: true,
+      skipEmptyLines: true,
     });
 
     if (errors.length !== 0) errors.map((err) => console.error(err));
@@ -22,6 +23,8 @@ export class TabelaSintatica {
       const { estado, ...simbolos } = row as Record<string, string>;
 
       for (const simbolo of Object.keys(simbolos)) {
+        if (!simbolos[simbolo] || simbolos[simbolo] === "" || simbolos[simbolo].length === 0) continue;
+
         tabela.set(Number.parseInt(estado), simbolo, new Operacao(simbolos[simbolo]));
       }
     }
