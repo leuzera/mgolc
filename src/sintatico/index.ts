@@ -75,6 +75,9 @@ export class Sintatico {
 
         console.error(`${erro}`);
         lexema = this.lexico.next();
+
+        // se não houver próximo token, retorne
+        if (lexema === undefined) return false;
       }
     }
   }
