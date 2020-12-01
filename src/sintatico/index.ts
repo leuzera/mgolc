@@ -27,30 +27,32 @@ export class Sintatico {
   }
 
   run(): boolean {
-    let lexema = this.lexico.next();
+    let token = this.lexico.next();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       let estado = this.pilha[this.pilha.length - 1] as number;
-      const operacao = this.acao.get(estado as number, lexema?.token as string);
+      const operacao = this.acao.get(estado as number, token?.token as string);
 
       logger(`pilha: ${this.pilha}`);
       logger(`operação: ${operacao}`);
 
       if (operacao?.tipo === "shift") {
         // empilha token
-        this.pilha.push(lexema?.token as string);
+        this.pilha.push(token?.token as string);
         // empilha novo estado
         this.pilha.push(operacao.valor);
+        // empilha o atributo
+        // this.attr.push(token?.tipo);
         // avança para próximo lexema
-        lexema = this.lexico.next();
+        token = this.lexico.next();
       } else if (operacao?.tipo === "reduce") {
         // regra de redução A -> B
         const regra = this.regras.get(operacao.valor);
         if (!regra) throw new Error(`${operacao.valor} não é uma regra válida.`);
 
         // desempilha 2 * |B|
-        for (const i in regra.direita) {
+        for (const _i in regra.direita) {
           this.pilha.pop();
           this.pilha.pop();
         }
@@ -65,6 +67,9 @@ export class Sintatico {
         // empilha lado direito da regra
         this.pilha.push(regra.esquerda);
         this.pilha.push(desvio.valor);
+
+        // executa regra semântica
+        // se string, empilhe em attr
       } else if (operacao?.tipo === "ACC") {
         // aceita
         return true;
@@ -73,13 +78,10 @@ export class Sintatico {
         let erro = new ErroSintatico(ERRO_SINTATICO.E500);
 
         // se op for válido, gere um erro especifico
-        if (operacao) erro = new ErroSintatico((<any>ERRO_SINTATICO)[operacao.operacao], lexema);
+        if (operacao) erro = new ErroSintatico((<any>ERRO_SINTATICO)[operacao.operacao], token);
 
         console.error(`${erro}`);
-        lexema = this.lexico.next();
-
-        // se não houver próximo token, retorne
-        if (lexema === undefined) return false;
+        token = this.lexico.next();
       }
     }
   }
