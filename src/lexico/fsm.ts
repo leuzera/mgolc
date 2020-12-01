@@ -42,7 +42,11 @@ type TokenState =
   | { value: "fc_p"; context: TokenContext }
   | { value: "ab_p"; context: TokenContext }
   | { value: "eof"; context: TokenContext }
-  | { value: "opm"; context: TokenContext } // deveria separar os diferentes operadores (+|-|*|/)?
+  | { value: "opm"; context: TokenContext }
+  | { value: "opm_menos"; context: TokenContext }
+  | { value: "opm_mais"; context: TokenContext }
+  | { value: "opm_vezes"; context: TokenContext }
+  | { value: "opm_divide"; context: TokenContext }
   | { value: "s3"; context: TokenContext }
   | { value: "s4"; context: TokenContext }
   | { value: "s5"; context: TokenContext }
@@ -106,6 +110,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.COMENTARIO,
+          tipo: "#",
           final: true,
         },
       },
@@ -123,6 +128,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.LITERAL,
+          tipo: "literal",
           final: true,
         },
       },
@@ -133,6 +139,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.PT_V,
+          tipo: ";",
           final: true,
         },
       },
@@ -143,6 +150,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.FC_P,
+          tipo: ")",
           final: true,
         },
       },
@@ -153,6 +161,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.AB_P,
+          tipo: "(",
           final: true,
         },
       },
@@ -163,17 +172,63 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.EOF,
+          tipo: "$",
           final: true,
         },
       },
       opm: {
+        always: [
+          { target: "opm_menos", cond: "eOpmMenos" },
+          { target: "opm_mais", cond: "eOpmMais" },
+          { target: "opm_vezes", cond: "eOpmVezes" },
+          { target: "opm_divide", cond: "eOpmDivide" },
+        ],
         on: {
           RESET: { target: "inicio", actions: ["reset"] },
           "*": { target: "final" },
         },
         meta: {
           token: TOKEN.OPM,
-          final: true,
+        },
+      },
+      opm_menos: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "final" },
+        },
+        meta: {
+          token: TOKEN.OPM,
+          tipo: "-",
+        },
+      },
+      opm_mais: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "final" },
+        },
+        meta: {
+          token: TOKEN.OPM,
+          tipo: "+",
+        },
+      },
+      opm_vezes: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "final" },
+        },
+        meta: {
+          token: TOKEN.OPM,
+          tipo: "*",
+        },
+      },
+      opm_divide: {
+        on: {
+          RESET: { target: "inicio", actions: ["reset"] },
+          "*": { target: "final" },
+        },
+        meta: {
+          token: TOKEN.OPM,
+          tipo: "/",
         },
       },
       s3: {
@@ -246,6 +301,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
+          tipo: ">",
           final: true,
         },
       },
@@ -256,6 +312,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
+          tipo: ">=",
           final: true,
         },
       },
@@ -269,6 +326,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
+          tipo: "<",
           final: true,
         },
       },
@@ -279,6 +337,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
+          tipo: "<=",
           final: true,
         },
       },
@@ -290,6 +349,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
 
         meta: {
           token: TOKEN.OPR,
+          tipo: "<>",
           final: true,
         },
       },
@@ -300,6 +360,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
+          tipo: "=",
           final: true,
         },
       },
@@ -310,6 +371,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.RCB,
+          tipo: "<-",
           final: true,
         },
       },
@@ -353,6 +415,10 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
     },
     guards: {
       eMenos: (context, event) => event.char === "-",
+      eOpmMenos: (context) => context.lexema === "-",
+      eOpmMais: (context) => context.lexema === "+",
+      eOpmVezes: (context) => context.lexema === "*",
+      eOpmDivide: (context) => context.lexema === "/",
       eExp: (context, event) => event.char === "E" || event.char === "e",
     },
   }
