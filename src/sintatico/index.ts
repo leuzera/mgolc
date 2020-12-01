@@ -82,6 +82,8 @@ export class Sintatico {
 
         console.error(`${erro}`);
         token = this.lexico.next();
+
+        if (erro.erro === ERRO_SINTATICO.E404) return false;
       }
     }
   }
