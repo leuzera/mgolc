@@ -10,12 +10,14 @@ const logger = debuglog("mgolc:sintatico");
 export class Sintatico {
   lexico: Lexico;
   pilha: Array<string | number>;
+  attr: Array<string | undefined>;
   acao: TabelaSintatica;
   desvio: TabelaSintatica;
   regras: Regras;
 
   constructor(source: string) {
     this.pilha = [1];
+    this.attr = [];
     this.lexico = new Lexico(source);
 
     // carregar csv, preencher this.acao e this.desvio
