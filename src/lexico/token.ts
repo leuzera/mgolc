@@ -29,9 +29,28 @@ export enum RESERVADAS {
   EOF = "eof",
 }
 
+export enum NTERMINAL {
+  A = "A",
+  ARG = "ARG",
+  CABECALHO = "CABECALHO",
+  CMD = "CMD",
+  COND = "COND",
+  CORPO = "CORPO",
+  D = "D",
+  ES = "ES",
+  LD = "LD",
+  LV = "LV",
+  OPRD = "OPRD",
+  P = "P",
+  P0 = "P0",
+  TIPO = "TIPO",
+  V = "V",
+  EXP_R = "EXP_R",
+}
+
 export class Token {
-  token: TOKEN | RESERVADAS;
-  lexema: string;
+  token: TOKEN | RESERVADAS | NTERMINAL;
+  lexema?: string;
   linha?: number;
   coluna?: number;
   tipo?: string;
@@ -44,7 +63,7 @@ export class Token {
    * @param coluna Coluna do primeiro caractere do lexema
    * @param tipo Tipo do lexema
    */
-  constructor(token: TOKEN | RESERVADAS, lexema: string, linha?: number, coluna?: number, tipo?: string) {
+  constructor(token: TOKEN | RESERVADAS | NTERMINAL, lexema?: string, linha?: number, coluna?: number, tipo?: string) {
     this.token = token;
     this.lexema = lexema;
     this.linha = linha;
@@ -53,7 +72,46 @@ export class Token {
   }
 
   toString(): string {
-    return `[${this.linha},${this.coluna}] <${this.token}, ${this.tipo}> ${this.lexema} `;
+    return `<${this.token}, ${this.tipo}> ${this.lexema}`;
+  }
+
+  static getNTerminal(palavra: string): NTERMINAL | undefined {
+    switch (palavra) {
+      case "A":
+        return NTERMINAL.A;
+      case "ARG":
+        return NTERMINAL.ARG;
+      case "CABECALHO":
+        return NTERMINAL.CABECALHO;
+      case "CMD":
+        return NTERMINAL.CMD;
+      case "COND":
+        return NTERMINAL.COND;
+      case "CORPO":
+        return NTERMINAL.CORPO;
+      case "D":
+        return NTERMINAL.D;
+      case "ES":
+        return NTERMINAL.ES;
+      case "LD":
+        return NTERMINAL.LD;
+      case "LV":
+        return NTERMINAL.LV;
+      case "OPRD":
+        return NTERMINAL.OPRD;
+      case "P":
+        return NTERMINAL.P;
+      case "P0":
+        return NTERMINAL.P0;
+      case "TIPO":
+        return NTERMINAL.TIPO;
+      case "V":
+        return NTERMINAL.V;
+      case "EXP_R":
+        return NTERMINAL.EXP_R;
+      default:
+        return undefined;
+    }
   }
 
   static getReservada(palavra: string): RESERVADAS | undefined {
@@ -84,6 +142,37 @@ export class Token {
         return RESERVADAS.REAL;
       case "$":
         return RESERVADAS.EOF;
+      default:
+        return undefined;
+    }
+  }
+
+  static getToken(palavra: string): TOKEN | undefined {
+    switch (palavra) {
+      case "num":
+        return TOKEN.NUM;
+      case "literal":
+        return TOKEN.LITERAL;
+      case "id":
+        return TOKEN.ID;
+      case "comentario":
+        return TOKEN.COMENTARIO;
+      case "eof":
+        return TOKEN.EOF;
+      case "opr":
+        return TOKEN.OPR;
+      case "rcb":
+        return TOKEN.RCB;
+      case "opm":
+        return TOKEN.OPM;
+      case "ab_p":
+        return TOKEN.AB_P;
+      case "fc_p":
+        return TOKEN.FC_P;
+      case "pt_v":
+        return TOKEN.PT_V;
+      case "erro":
+        return TOKEN.ERRO;
       default:
         return undefined;
     }

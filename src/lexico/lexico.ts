@@ -75,29 +75,50 @@ export class Lexico {
       }
     }
 
-    if (!char) {
-      return new Token(RESERVADAS.EOF, "$", this.linha, this.coluna);
-    }
-
-    const estadoMeta: any = Object.values(tokenMachine.state.meta)[0];
-
     const lexema: string = tokenMachine.state.context.lexema;
     const linha: number = tokenMachine.state.context.linha;
     const coluna: number = tokenMachine.state.context.coluna;
+    let token: Token;
 
-    const tipoToken: TOKEN | RESERVADAS = Token.getReservada(lexema) || estadoMeta?.token;
-    const tipo: string = estadoMeta?.tipo || undefined;
+    if (this.tabela.has(lexema)) {
+      token = this.tabela.get(lexema) as Token;
+    } else {
+      const estadoMeta: any = Object.values(tokenMachine.state.meta)[0];
 
-    const token = new Token(tipoToken, lexema, linha, coluna, tipo);
+      const tipoToken: TOKEN | RESERVADAS = Token.getReservada(lexema) || estadoMeta?.token;
+      const tipo: string = estadoMeta?.tipo || (Token.getReservada(lexema) as string);
+
+      token = new Token(tipoToken, lexema, linha, coluna, tipo);
+
+      if (token.token === "id") {
+        this.tabela.set(token);
+      }
+    }
 
     tokenMachine.stop();
 
     logger(`TOKEN: ${token}`);
 
-    if (token.tipo === TOKEN.ID && !this.tabela.has(token.lexema)) {
-      this.tabela.add(token);
+    if (!char) {
+      return new Token(RESERVADAS.EOF, "$", this.linha, this.coluna);
     }
 
     return token;
+  }
+
+  getToken(lexema: string): Token | undefined {
+    return this.tabela.get(lexema);
+  }
+
+  setToken(token: Token): void {
+    this.tabela.set(token);
+  }
+
+  setTokenTipo(lexema: string, tipo: string): void {
+    const token = this.tabela.get(lexema);
+    if (token) {
+      const newToken = new Token(token?.token, token?.lexema, token?.linha, token?.coluna, tipo);
+      this.setToken(newToken);
+    }
   }
 }

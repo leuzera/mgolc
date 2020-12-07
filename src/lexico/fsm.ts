@@ -277,7 +277,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.NUM,
-          tipo: "real",
+          tipo: "double",
           final: true,
         },
       },
@@ -289,7 +289,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.NUM,
-          tipo: "real",
+          tipo: "double",
           final: true,
         },
       },
@@ -349,7 +349,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
 
         meta: {
           token: TOKEN.OPR,
-          tipo: "<>",
+          tipo: "!=",
           final: true,
         },
       },
@@ -360,7 +360,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.OPR,
-          tipo: "=",
+          tipo: "==",
           final: true,
         },
       },
@@ -371,7 +371,7 @@ const _tokenMachine = createMachine<TokenContext, TokenEvent, TokenState>(
         },
         meta: {
           token: TOKEN.RCB,
-          tipo: "<-",
+          tipo: "=",
           final: true,
         },
       },
